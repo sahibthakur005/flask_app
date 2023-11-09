@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
     return render_template("index.html")
-@app.route("/upload/")
+@app.route("/upload")
 def hello_upload():
     return "Hello upload"
