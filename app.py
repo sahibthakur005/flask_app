@@ -4,15 +4,32 @@ import rembg
 import numpy as np
 from PIL import Image
 from io import BytesIO
+from werkzeug.datastructures import FileStorage
+
 app = Flask(__name__)
+
+def process_image_chunks(file_storage):
+    chunk_size = 4096 * 4096 #set chunk size
+    output = BytesIO()
+    while True:
+        chunk = file_storage.read(chunk_size)
+        if not chunk:
+            break
+        processed_chunk = rembg.remove(chunk)
+        output.write(processed_chunk)
+        return output.getvalue()
+ 
+
+
+
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
     if 'image' not in request.files:
         return jsonify({'message': 'No file part in the request'}), 400
 
-    file = request.files['image']
-    if file.filename == '':
+    image_file = request.files['image']
+    if image_file.filename == '':
         return jsonify({'message': 'No selected file'}), 400
 
     # Convert image file to byte array
@@ -24,16 +41,20 @@ def upload_image():
     #buffered = BytesIO()
     #output_image.save(buffered, format='JPEG')
     #img_str_bytes = base64.b64encode(buffered.getvalue())
-    
+    #image_file = file
+
+    file_storage = FileStorage(image_file)
+
+    output_image = process_image_chunks(file_storage)
 
 
 
 
 
-    input_array = file.read()
-    output_array = rembg.remove(input_array)
+    #input_array = file.read()
+    #output_array = rembg.remove(input_array)
 
-    img_str_bytes = base64.b64encode(output_array)
+    img_str_bytes = base64.b64encode(output_image)
     image_byte_array = img_str_bytes.decode("utf-8")
 
 
